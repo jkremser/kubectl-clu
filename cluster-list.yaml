@@ -1,0 +1,133 @@
+kind: ConfigMap
+metadata:
+  labels:
+    app-operator.giantswarm.io/watching: "true"
+  name: $CLUSTER-user-values
+  namespace: org-$ORG
+apiVersion: v1
+data:
+  values: |
+    baseDomain: test.gigantic.io
+    clusterDescription: "test cluster"
+    organization: "$ORG"
+    cluster:
+      kubernetesVersion: $K8S_VERSION
+      enableEncryptionProvider: false
+    connectivity:
+      network:
+        allowAllEgress: true
+        controlPlaneEndpoint:
+          host: "$IP"
+          ipPoolName: wc-cp-ips
+          port: 6443
+        loadBalancers:
+          cidrBlocks:
+          - "10.10.222.132/32"
+    controlPlane:
+      image:
+        repository: registry.k8s.io
+      replicas: 1
+      machineTemplate:
+        network:
+          devices:
+          - networkName: 'grasshopper-capv'
+            dhcp4: true
+        cloneMode: "linkedClone"
+        diskGiB: 50
+        numCPUs: 4
+        memoryMiB: 8096
+        resourcePool: "grasshopper"
+        template: ubuntu-2004-kube-$K8S_VERSION
+
+    nodeClasses:
+      default:
+        template: ubuntu-2004-kube-$K8S_VERSION
+        cloneMode: "linkedClone"
+        diskGiB: 50
+        numCPUs: 6
+        memoryMiB: 14000
+        resourcePool: "grasshopper"
+        network:
+          devices:
+          - networkName: 'grasshopper-capv'
+            dhcp4: true
+    nodePools:
+      worker:
+        class: "default"
+        replicas: 2
+    helmReleases:
+      cilium:
+        interval:
+          20s
+      cpi:
+        interval:
+          30s
+      coredns:
+        interval:
+          30s
+---
+apiVersion: application.giantswarm.io/v1alpha1
+kind: App
+metadata:
+  labels:
+    app-operator.giantswarm.io/version: 0.0.0
+    app.kubernetes.io/name: cluster-vsphere
+  name: $CLUSTER
+  namespace: org-giantswarm
+spec:
+  catalog: $CLUSTER_CATALOG
+  extraConfigs:
+  - kind: secret
+    name: container-registries-configuration
+    namespace: giantswarm
+    priority: 25
+  kubeConfig:
+    inCluster: true
+  name: cluster-vsphere
+  namespace: org-$ORG
+  userConfig:
+    configMap:
+      name: $CLUSTER-user-values
+      namespace: org-$ORG
+    secret:
+      name: vsphere-credentials
+      namespace: org-$ORG
+  version: $CLUSTER_VERSION
+---
+apiVersion: v1
+data:
+  values: |
+    clusterName: $CLUSTER
+    organization: $ORG
+    managementCluster: $CLUSTER
+kind: ConfigMap
+metadata:
+  name: $CLUSTER-default-apps-user-values
+  namespace: org-$ORG
+---
+apiVersion: application.giantswarm.io/v1alpha1
+kind: App
+metadata:
+  generation: 1
+  labels:
+    app-operator.giantswarm.io/version: 0.0.0
+    app.kubernetes.io/name: default-apps-vsphere
+    giantswarm.io/cluster: $CLUSTER
+    giantswarm.io/managed-by: cluster
+  name: $CLUSTER-default-apps
+  namespace: org-$ORG
+spec:
+  catalog: cluster
+  config:
+    configMap:
+      name: $CLUSTER-cluster-values
+      namespace: org-$ORG
+  kubeConfig:
+    inCluster: true
+  name: default-apps-vsphere
+  namespace: org-$ORG
+  userConfig:
+    configMap:
+      name: $CLUSTER-default-apps-user-values
+      namespace: org-$ORG
+  version: $DEFAULT_APPS_VERSION

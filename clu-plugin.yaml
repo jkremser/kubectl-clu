@@ -1,0 +1,31 @@
+apiVersion: krew.googlecontainertools.github.com/v1alpha2
+kind: Plugin
+metadata:
+  name: clu
+spec:
+  version: "v0.0.1"
+  homepage: https://github.com/jkremser/kubectl-clu
+  shortDescription: "Simple TUI based shell script for templating the GiantSwarm clusters."
+  description: |
+    It asks couple of questions and fill the answers to the proper places for K8s manifests.
+  platforms:
+    - selector:
+        matchExpressions:
+          - key: "os"
+            operator: "In"
+            values:
+              - darwin
+              - linux
+      uri: https://github.com/jkremser/kubectl-clu/archive/refs/tags/v0.0.1.zip
+      # 'sha256' is the sha256sum of the zip from url above (shasum -a 256 ..zip)
+      sha256: 
+      files:
+        - from: "kubectl-clu-*/kubectl-clu"
+          to: "."
+        - from: "kubectl-clu-*/LICENSE"
+          to: "."
+        - from: "kubectl-clu-*/cluster-list.yaml"
+          to: "."
+        - from: "kubectl-clu-*/README.md"
+          to: "."
+      bin: kubectl-clu

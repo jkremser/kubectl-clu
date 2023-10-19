@@ -1,0 +1,129 @@
+#!/bin/bash
+
+DIR="${DIR:-$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )}"
+K8S_VERSIONS=(v1.25.6 v1.24.11 v1.23.16 v1.22.5+vmware.1)
+TEMPLATE_FILE=${TEMPLATE_FILE:-"cluster-list.yaml"}
+export ORG=${ORG:-"giantswarm"}
+export DEFAULT_APPS_VERSION=${DEFAULT_APPS_VERSION:-"0.11.1"}
+
+main() {
+    [[ $# -lt 1 ]] && echo "usage: $0 [deploy|delete]" && exit 1
+    for c in curl figlet fzf kubectl yq jq; do
+        ! which "${c}" > /dev/null && echo "Install "${c}", this script needs it" && exit 2
+    done
+    
+    [[ $1 == deploy ]] && {
+        deploy
+        exit 0
+    }
+
+    [[ $1 == delete ]] && {
+        delete
+        exit 0
+    }
+    echo "usage: $0 [deploy|delete]" && exit 1
+}
+
+deploy() {
+    export COL="\e[2;35;49m"
+    export RES="\e[0m"
+
+    # k8s version
+    export K8S_VERSION=$(printf "%s\n" "${K8S_VERSIONS[@]}" | \
+     fzf --header "Select k8s version" --prompt='λ' --cycle --preview-window top:80% \
+      --preview "printf '${COL}'; figlet -f big GiantSwarm.io; printf '${RES}'; echo -e 'values.yaml for cluster chart:\n=============================='; export K8S_VERSION={}; cat "${DIR}/${TEMPLATE_FILE}" | envsubst | yq 'select(documentIndex == 0) | .data.values' - | yq --colors")
+    [[ $? != 0 ]] && exit
+
+    # name
+    echo "cluster name:"
+    read CLUSTER
+    export CLUSTER
+    [[ -z $CLUSTER ]] && echo "Cluster name can't be empty" && exit 1
+
+    # ip
+    echo "control plane ip? (leave empty for auto-assignment)"
+    read IP
+
+    # apps version
+    echo -e "Apps version: ${DEFAULT_APPS_VERSION}? [Y/n]"
+	read _resp
+	[[ $_resp =~ [nN] ]] && {
+        DEFAULT_APPS_VERSION=$(curl -s https://api.github.com/repos/giantswarm/default-apps-vsphere/releases | jq -r '.[].name | sub("^v"; "")' | \
+        fzf --header "Select version for default apps" --prompt='λ' --cycle --preview-window top:80% \
+          --preview "printf '${COL}'; figlet -f big GiantSwarm.io; printf '${RES}'; echo -e 'App manifest for default apps\n=============================='; export DEFAULT_APPS_VERSION={}; cat "${DIR}/${TEMPLATE_FILE}" | envsubst | yq 'select(documentIndex == 3)' --colors")
+    }
+
+    # org
+    echo -e "Organization: ${ORG}? [Y/n]"
+	read _resp
+	[[ $_resp =~ [nN] ]] && {
+        ORG=$(kubectl get organizations.security.giantswarm.io --no-headers -o custom-columns=":metadata.name" | \
+     fzf --header "Select organization" --prompt='λ' --cycle --preview-window top:80% \
+      --preview "printf '${COL}'; figlet -f big GiantSwarm.io; printf '${RES}'; echo -e 'values.yaml for cluster chart: (configmaps will be created in org-{} namespace)\n=============================='; export ORG={}; cat "${DIR}/${TEMPLATE_FILE}" | envsubst | yq 'select(documentIndex == 0) | .data.values' - | yq --colors")
+    }
+
+    export CLUSTER IP ORG DEFAULT_APPS_VERSION
+
+    export CLUSTER_CATALOG=cluster
+    export CLUSTER_VERSION=0.6.1
+    TEST_CATALOG=$(echo -e "no\nyes" | fzf --header "test catalog?" --prompt='λ')
+    [[ $? != 0 ]] && exit
+    [[ ${TEST_CATALOG} == "yes" ]] && {
+        export CLUSTER_CATALOG=cluster-test
+        _possible_versions=$(curl -s https://giantswarm.github.io/cluster-test-catalog/index.yaml | grep -A1 cluster-vsphere | grep version: | cut -f2 -d':')
+        _filtered_versions=()
+        echo "Fetching the versions.."
+        {
+            rm -rf cluster-vsphere
+            git clone https://github.com/giantswarm/cluster-vsphere && cd cluster-vsphere
+            for v in $(echo ${_possible_versions}); do
+                git cat-file -t $(echo $v | cut -f2 -d'-') &> /dev/null && _filtered_versions+=($v)
+            done
+            rm -rf cluster-vsphere
+        } &> /dev/null
+
+        export CLUSTER_VERSION=$(printf "%s\n" "${_filtered_versions[@]}" | fzf --header "cluster version?" --prompt='λ' --cycle --delimiter='-' --preview-window right:80% --preview "git show --color=always {2}")
+        _ret=$?
+
+        [[ $_ret != 0 ]] && exit
+    }
+
+    check_result "${DIR}/${TEMPLATE_FILE}"
+}
+
+check_result() {
+    [[ $# -lt 1 ]] && echo "usage: $0 file_path" && exit 1
+    file_path="${1}"
+    cat ${file_path} | envsubst | bat -lyaml
+    [[ $? != 0 ]] && exit
+    printf "Are you sure to create the cluster '$CLUSTER' on ${COL}'$(kubectl config current-context)'${RES}\nHit 'e' for modifying the manifests further.\nHit 'p' for printing the manifests to stdout."
+	echo "[y/N/e/p]?"
+	read _resp
+	[[ $_resp =~ [yY] ]] && {
+        # here we apply the manifests
+        cat ${file_path} | envsubst | kubectl apply -f -
+    }
+    [[ $_resp =~ [eE] ]] && {
+        tmp=$(mktemp)
+        cat ${file_path} | envsubst > ${tmp}
+        ${EDITOR} ${tmp}
+        check_result ${tmp}
+    }
+    [[ $_resp =~ [pP] ]] && {
+        cat ${file_path} | envsubst
+    }
+}
+
+delete() {
+    CLUSTER=$(kubectl get cluster --no-headers -o custom-columns=":metadata.name" -A | fzf --header "Select cluster to delete" --prompt='λ')
+    NS=$(kubectl get cluster -A | grep $CLUSTER | cut -d' ' -f1)
+    echo "Are you sure to delete cluster '$CLUSTER' in namespace '$NS' on $(kubectl config current-context):"
+	echo "[y/N]?"
+	read _resp
+	[[ $_resp =~ [yY] ]] && {
+        kubectl delete cm $CLUSTER-user-values -n$NS
+        kubectl delete app $CLUSTER $CLUSTER-default-apps -n$NS
+    }
+}
+
+main $@
