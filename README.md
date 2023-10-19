@@ -23,3 +23,9 @@ Installed plugin: clu
  | 	https://github.com/jkremser/kubectl-clu
 /
 ```
+
+## Getting newer version
+
+```bash
+kubectl krew update clu
+```
