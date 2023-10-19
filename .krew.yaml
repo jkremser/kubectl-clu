@@ -3,7 +3,7 @@ kind: Plugin
 metadata:
   name: clu
 spec:
-  version: "v0.0.3"
+  version: "v0.0.4"
   homepage: https://github.com/jkremser/kubectl-clu
   shortDescription: "Simple TUI based shell script for templating the GiantSwarm clusters."
   description: |
@@ -16,9 +16,9 @@ spec:
             values:
               - darwin
               - linux
-      uri: https://github.com/jkremser/kubectl-clu/archive/refs/tags/v0.0.3.zip
+      uri: https://github.com/jkremser/kubectl-clu/archive/refs/tags/v0.0.4.zip
       # 'sha256' is the sha256sum of the zip from url above (shasum -a 256 ..zip)
-      sha256: 8a9896514413af36776a5a318170fff96f151bca3dd19b98917f86a376c46314
+      sha256: df2ce24e1f03c9dd72f86375229e13f79c93a1a311be93f25afcb257304f9da5
       # {{addURIAndSha "https://github.com/jkremser/kubectl-clu/releases/download/{{ .TagName }}/kubectl-clu_{{ .TagName }}.tar.gz" .TagName }}
       files:
         - from: "kubectl-clu-*/kubectl-clu"
