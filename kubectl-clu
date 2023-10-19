@@ -13,6 +13,7 @@ main() {
     done
     
     [[ $1 == deploy ]] && {
+        check_template
         deploy
         exit 0
     }
@@ -31,7 +32,7 @@ deploy() {
     # k8s version
     export K8S_VERSION=$(printf "%s\n" "${K8S_VERSIONS[@]}" | \
      fzf --header "Select k8s version" --prompt='λ' --cycle --preview-window top:80% \
-      --preview "printf '${COL}'; figlet -f big GiantSwarm.io; printf '${RES}'; echo -e 'values.yaml for cluster chart:\n=============================='; export K8S_VERSION={}; cat "${DIR}/${TEMPLATE_FILE}" | envsubst | yq 'select(documentIndex == 0) | .data.values' - | yq --colors")
+      --preview "printf '${COL}'; figlet -f big GiantSwarm.io; printf '${RES}'; echo -e 'values.yaml for cluster chart:\n=============================='; export K8S_VERSION={}; cat "${TEMPLATE_FILE}" | envsubst | yq 'select(documentIndex == 0) | .data.values' - | yq --colors")
     [[ $? != 0 ]] && exit
 
     # name
@@ -50,7 +51,7 @@ deploy() {
 	[[ $_resp =~ [nN] ]] && {
         DEFAULT_APPS_VERSION=$(curl -s https://api.github.com/repos/giantswarm/default-apps-vsphere/releases | jq -r '.[].name | sub("^v"; "")' | \
         fzf --header "Select version for default apps" --prompt='λ' --cycle --preview-window top:80% \
-          --preview "printf '${COL}'; figlet -f big GiantSwarm.io; printf '${RES}'; echo -e 'App manifest for default apps\n=============================='; export DEFAULT_APPS_VERSION={}; cat "${DIR}/${TEMPLATE_FILE}" | envsubst | yq 'select(documentIndex == 3)' --colors")
+          --preview "printf '${COL}'; figlet -f big GiantSwarm.io; printf '${RES}'; echo -e 'App manifest for default apps\n=============================='; export DEFAULT_APPS_VERSION={}; cat "${TEMPLATE_FILE}" | envsubst | yq 'select(documentIndex == 3)' --colors")
     }
 
     # org
@@ -59,7 +60,7 @@ deploy() {
 	[[ $_resp =~ [nN] ]] && {
         ORG=$(kubectl get organizations.security.giantswarm.io --no-headers -o custom-columns=":metadata.name" | \
      fzf --header "Select organization" --prompt='λ' --cycle --preview-window top:80% \
-      --preview "printf '${COL}'; figlet -f big GiantSwarm.io; printf '${RES}'; echo -e 'values.yaml for cluster chart: (configmaps will be created in org-{} namespace)\n=============================='; export ORG={}; cat "${DIR}/${TEMPLATE_FILE}" | envsubst | yq 'select(documentIndex == 0) | .data.values' - | yq --colors")
+      --preview "printf '${COL}'; figlet -f big GiantSwarm.io; printf '${RES}'; echo -e 'values.yaml for cluster chart: (configmaps will be created in org-{} namespace)\n=============================='; export ORG={}; cat "${TEMPLATE_FILE}" | envsubst | yq 'select(documentIndex == 0) | .data.values' - | yq --colors")
     }
 
     export CLUSTER IP ORG DEFAULT_APPS_VERSION
@@ -88,7 +89,7 @@ deploy() {
         [[ $_ret != 0 ]] && exit
     }
 
-    check_result "${DIR}/${TEMPLATE_FILE}"
+    check_result "${TEMPLATE_FILE}"
 }
 
 check_result() {
@@ -124,6 +125,20 @@ delete() {
         kubectl delete cm $CLUSTER-user-values -n$NS
         kubectl delete app $CLUSTER $CLUSTER-default-apps -n$NS
     }
+}
+
+check_template() {
+    if [[ -f "${TEMPLATE_FILE}" ]]; then
+        return
+    fi
+    if [[ -f "${DIR}/${TEMPLATE_FILE}" ]]; then
+        export TEMPLATE_FILE="${DIR}/${TEMPLATE_FILE}"
+        return
+    fi
+    if [[ -f "${DIR}/../store/${TEMPLATE_FILE}" ]]; then # krew case
+        export TEMPLATE_FILE="${DIR}/../store/${TEMPLATE_FILE}"
+        return
+    fi
 }
 
 main $@
