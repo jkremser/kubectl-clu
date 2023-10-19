@@ -14,12 +14,12 @@ or install the latest released version using Krew
 
 ```bash
 λ kubectl krew install --manifest-url=https://raw.githubusercontent.com/jkremser/kubectl-clu/master/clu-plugin.yaml
-Installing plugin: log2rbac
-Installed plugin: log2rbac
+Installing plugin: clu
+Installed plugin: clu
 \
  | Use this plugin:
- | 	kubectl log2rbac
+ | 	kubectl clu
  | Documentation:
- | 	https://github.com/jkremser/log2rbac-operator/tree/master/kubectl-plugin
+ | 	https://github.com/jkremser/kubectl-clu/tree/master/README.md
 /
 ```
