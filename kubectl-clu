@@ -122,7 +122,9 @@ check_result() {
 
 delete() {
     CLUSTER=$(kubectl get cluster --no-headers -o custom-columns=":metadata.name" -A | fzf --header "Select cluster to delete" --prompt='λ')
+    [[ $? != 0 ]] && exit 0
     NS=$(kubectl get cluster -A | grep $CLUSTER | cut -d' ' -f1)
+    [[ $? != 0 ]] && exit 0
     echo "Are you sure to delete cluster '$CLUSTER' in namespace '$NS' on $(kubectl config current-context):"
 	echo "[y/N]?"
 	read _resp
