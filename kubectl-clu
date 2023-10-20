@@ -7,7 +7,7 @@ export ORG=${ORG:-"giantswarm"}
 export DEFAULT_APPS_VERSION=${DEFAULT_APPS_VERSION:-"0.11.1"}
 
 main() {
-    [[ $# -lt 1 ]] && echo "usage: $0 (c)reate | (d)elete" && exit 1
+    [[ $# -lt 1 ]] && print_usage && exit 1
     for c in bat curl figlet fzf kubectl yq jq; do
         ! command -v "${c}" &> /dev/null && echo "Install "${c}", this script needs it" && exit 2
     done
@@ -34,10 +34,11 @@ deploy() {
     export RES="\e[0m"
 
     # k8s version
-    export K8S_VERSION=$(printf "%s\n" "${K8S_VERSIONS[@]}" | \
+    K8S_VERSION=$(printf "%s\n" "${K8S_VERSIONS[@]}" | \
      fzf --header "Select k8s version" --prompt='λ' --cycle --preview-window top:80% \
       --preview "printf '${COL}'; figlet -f big GiantSwarm.io; printf '${RES}'; echo -e 'values.yaml for cluster chart:\n=============================='; export K8S_VERSION={}; cat "${TEMPLATE_FILE}" | envsubst | yq 'select(documentIndex == 0) | .data.values' - | yq --colors")
-    [[ $? != 0 ]] && exit
+    [[ $? != 0 ]] && exit 0
+    export K8S_VERSION
 
     # name
     echo "cluster name:"
@@ -140,12 +141,35 @@ check_template() {
         return
     fi
     [ "$(uname)" == "Darwin" ] && {
-        export TEMPLATE_FILE="$(dirname `readlink $0`)/${TEMPLATE_FILE}"
-        return
+        export TEMPLATE_FILE="$(dirname `readlink $0 2> /dev/null` 2> /dev/null)/${TEMPLATE_FILE}"
     } || {
-        export TEMPLATE_FILE="$(dirname `readlink -f $0`)/${TEMPLATE_FILE}"
-        return
+        export TEMPLATE_FILE="$(dirname `readlink -f $0 2> /dev/null` 2> /dev/null)/${TEMPLATE_FILE}"
     }
+    if [[ ! -f "${TEMPLATE_FILE}" ]]; then
+        echo "File ${TEMPLATE_FILE} does not exist, provide a valid \"TEMPLATE_FILE\""
+        exit 2
+    fi
+}
+
+print_usage() {
+    cat << EOF
+
+Usage: kubectl clu (c)reate | (d)elete
+
+Available commands:
+   create, c              Runs the interactive mode for creating the clulster
+   delete, d              Runs the interactive mode for deleting the clulster
+   --version, -v          Prints the version
+
+Examples:
+   kubectl clu create                       ... default usage
+   TEMPLATE_FILE=~/asdf kubectl clu create  ... custom file that will be templated
+
+Other env vars that can be passed:
+   ORG
+   DEFAULT_APPS_VERSION
+
+EOF
 }
 
 print_version() {
