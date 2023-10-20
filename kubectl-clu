@@ -22,6 +22,10 @@ main() {
         delete
         exit 0
     }
+    [[ $1 == -v ]] || [[ $1 == --version ]] && {
+        print_version
+        exit 0
+    }
     echo "usage: $0 (c)reate | (d)elete" && exit 1
 }
 
@@ -135,16 +139,26 @@ check_template() {
         export TEMPLATE_FILE="${DIR}/${TEMPLATE_FILE}"
         return
     fi
-    if [[ -f "${DIR}/../store/${TEMPLATE_FILE}" ]]; then # krew case
-        export TEMPLATE_FILE="${DIR}/../store/${TEMPLATE_FILE}"
+    [ "$(uname)" == "Darwin" ] && {
+        export TEMPLATE_FILE="$(dirname `readlink $0`)/${TEMPLATE_FILE}"
         return
-    fi
+    } || {
+        export TEMPLATE_FILE="$(dirname `readlink -f $0`)/${TEMPLATE_FILE}"
+        return
+    }
+}
+
+print_version() {
+  [ "$(uname)" == "Darwin" ] && {
+    cat $(dirname `readlink $0 2> /dev/null` 2> /dev/null)/VERSION 2> /dev/null
+  } || {
+    cat $(dirname `readlink -f $0`)/VERSION
+  }
 }
 
 cleanup() {
     # make sure the temp git repo was cleaned (in case signal was send during the cloning)
     rm -rf deleteme-temp
-    echo "hello"
 }
 trap cleanup EXIT
 

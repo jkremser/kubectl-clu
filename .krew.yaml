@@ -27,6 +27,8 @@ spec:
           to: "."
         - from: "kubectl-clu-*/cluster-list.yaml"
           to: "."
+        - from: "kubectl-clu-*/VERSION"
+          to: "."
         - from: "kubectl-clu-*/README.md"
           to: "."
       bin: kubectl-clu
