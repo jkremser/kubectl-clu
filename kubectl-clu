@@ -7,22 +7,22 @@ export ORG=${ORG:-"giantswarm"}
 export DEFAULT_APPS_VERSION=${DEFAULT_APPS_VERSION:-"0.11.1"}
 
 main() {
-    [[ $# -lt 1 ]] && echo "usage: $0 [deploy|delete]" && exit 1
-    for c in curl figlet fzf kubectl yq jq; do
+    [[ $# -lt 1 ]] && echo "usage: $0 (c)reate | (d)elete" && exit 1
+    for c in bat curl figlet fzf kubectl yq jq; do
         ! which "${c}" > /dev/null && echo "Install "${c}", this script needs it" && exit 2
     done
     
-    [[ $1 == deploy ]] && {
+    [[ $1 == create ]] || [[ $1 == c ]] && {
         check_template
         deploy
         exit 0
     }
 
-    [[ $1 == delete ]] && {
+    [[ $1 == delete ]] || [[ $1 == d ]] && {
         delete
         exit 0
     }
-    echo "usage: $0 [deploy|delete]" && exit 1
+    echo "usage: $0 (c)reate | (d)elete" && exit 1
 }
 
 deploy() {
@@ -75,12 +75,12 @@ deploy() {
         _filtered_versions=()
         echo "Fetching the versions.."
         {
-            rm -rf cluster-vsphere
-            git clone https://github.com/giantswarm/cluster-vsphere && cd cluster-vsphere
+            rm -rf deleteme-temp
+            git clone https://github.com/giantswarm/cluster-vsphere deleteme-temp && cd deleteme-temp
             for v in $(echo ${_possible_versions}); do
                 git cat-file -t $(echo $v | cut -f2 -d'-') &> /dev/null && _filtered_versions+=($v)
             done
-            rm -rf cluster-vsphere
+            cd .. && rm -rf deleteme-temp
         } &> /dev/null
 
         export CLUSTER_VERSION=$(printf "%s\n" "${_filtered_versions[@]}" | fzf --header "cluster version?" --prompt='λ' --cycle --delimiter='-' --preview-window right:80% --preview "git show --color=always {2}")
@@ -140,5 +140,12 @@ check_template() {
         return
     fi
 }
+
+cleanup() {
+    # make sure the temp git repo was cleaned (in case signal was send during the cloning)
+    rm -rf deleteme-temp
+    echo "hello"
+}
+trap cleanup EXIT
 
 main $@
