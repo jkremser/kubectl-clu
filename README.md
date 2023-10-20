@@ -13,7 +13,7 @@ kubectl clu
 or install the latest released version using Krew
 
 ```bash
-kubectl krew install --manifest-url=https://raw.githubusercontent.com/jkremser/kubectl-clu/master/.krew.yaml
+kubectl krew install --manifest-url=https://github.com/jkremser/kubectl-clu/raw/main/.krew.yaml
 ```
 
 ```bash
