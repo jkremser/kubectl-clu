@@ -13,7 +13,11 @@ kubectl clu
 or install the latest released version using Krew
 
 ```bash
-λ kubectl krew install --manifest-url=https://raw.githubusercontent.com/jkremser/kubectl-clu/master/.krew.yaml
+kubectl krew install --manifest-url=https://raw.githubusercontent.com/jkremser/kubectl-clu/master/.krew.yaml
+```
+
+```bash
+# output:
 Installing plugin: clu
 Installed plugin: clu
 \
@@ -22,10 +26,4 @@ Installed plugin: clu
  | Documentation:
  | 	https://github.com/jkremser/kubectl-clu
 /
-```
-
-## Getting newer version
-
-```bash
-kubectl krew update clu
 ```
