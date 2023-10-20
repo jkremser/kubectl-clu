@@ -1,4 +1,4 @@
-# log2rbac kubectl plugin
+# kubectl-clu plugin
 
 Simple TUI based shell script for templating the GiantSwarm clusters.
 
