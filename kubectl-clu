@@ -9,7 +9,7 @@ export DEFAULT_APPS_VERSION=${DEFAULT_APPS_VERSION:-"0.11.1"}
 main() {
     [[ $# -lt 1 ]] && echo "usage: $0 (c)reate | (d)elete" && exit 1
     for c in bat curl figlet fzf kubectl yq jq; do
-        ! which "${c}" > /dev/null && echo "Install "${c}", this script needs it" && exit 2
+        ! command -v "${c}" &> /dev/null && echo "Install "${c}", this script needs it" && exit 2
     done
     
     [[ $1 == create ]] || [[ $1 == c ]] && {

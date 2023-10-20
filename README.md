@@ -27,3 +27,9 @@ Installed plugin: clu
  | 	https://github.com/jkremser/kubectl-clu
 /
 ```
+
+### Usage
+
+```bash
+k clu create
+```
