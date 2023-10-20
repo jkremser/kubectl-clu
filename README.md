@@ -5,12 +5,7 @@ Simple TUI based shell script for templating the GiantSwarm clusters.
 
 ## Quick start
 
-```bash
-sudo ln -s $PWD/kubectl-clu /usr/local/bin/kubectl-clu
-kubectl clu
-```
-
-or install the latest released version using Krew
+Having krew [installed](https://krew.sigs.k8s.io/docs/user-guide/setup/install/), just run:
 
 ```bash
 kubectl krew install --manifest-url=https://github.com/jkremser/kubectl-clu/raw/main/.krew.yaml
