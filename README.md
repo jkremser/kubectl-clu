@@ -27,9 +27,31 @@ Installed plugin: clu
  | 	https://github.com/jkremser/kubectl-clu
 /
 ```
-
 ### Usage
 
 ```bash
 k clu create
 ```
+
+### Requirements
+
+This plugin requires couple of binaries to work properly.
+
+Mac:
+```bash
+brew install bat curl figlet fzf yq jq
+```
+
+Linux:
+
+```bash
+yum install bat curl figlet fzf jq
+```
+
+or
+
+```bash
+apt-get install bat curl figlet fzf jq
+```
+
+and for `yq` consult the [readme](https://github.com/mikefarah/yq#install).
