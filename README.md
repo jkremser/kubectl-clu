@@ -50,3 +50,11 @@ apt-get install bat curl figlet fzf jq
 ```
 
 and for `yq` consult the [readme](https://github.com/mikefarah/yq#install).
+
+### Update
+
+```
+kubectl clu -v
+kubectl krew uninstall clu && kubectl krew install --manifest-url=https://github.com/jkremser/kubectl-clu/raw/main/.krew.yaml
+kubectl clu -v
+```
