@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 DIR="${DIR:-$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )}"
 K8S_VERSIONS=(v1.25.6 v1.24.11 v1.23.16 v1.22.5+vmware.1)
@@ -37,7 +38,7 @@ deploy() {
     K8S_VERSION=$(printf "%s\n" "${K8S_VERSIONS[@]}" | \
      fzf --header "Select k8s version" --prompt='λ' --cycle --preview-window top:80% \
       --preview "printf '${COL}'; figlet -f big GiantSwarm.io; printf '${RES}'; echo -e 'values.yaml for cluster chart:\n=============================='; export K8S_VERSION={}; cat "${TEMPLATE_FILE}" | envsubst | yq 'select(documentIndex == 0) | .data.values' - | yq --colors")
-    [[ $? != 0 ]] && exit 0
+
     export K8S_VERSION
 
     # name
@@ -73,7 +74,7 @@ deploy() {
     export CLUSTER_CATALOG=cluster
     export CLUSTER_VERSION=0.6.1
     TEST_CATALOG=$(echo -e "no\nyes" | fzf --header "test catalog?" --prompt='λ')
-    [[ $? != 0 ]] && exit
+
     [[ ${TEST_CATALOG} == "yes" ]] && {
         export CLUSTER_CATALOG=cluster-test
         _possible_versions=$(curl -s https://giantswarm.github.io/cluster-test-catalog/index.yaml | grep -A1 cluster-vsphere | grep version: | cut -f2 -d':')
@@ -88,10 +89,8 @@ deploy() {
             cd .. && rm -rf deleteme-temp
         } &> /dev/null
 
-        export CLUSTER_VERSION=$(printf "%s\n" "${_filtered_versions[@]}" | fzf --header "cluster version?" --prompt='λ' --cycle --delimiter='-' --preview-window right:80% --preview "git show --color=always {2}")
+        CLUSTER_VERSION=$(printf "%s\n" "${_filtered_versions[@]}" | fzf --header "cluster version?" --prompt='λ' --cycle --delimiter='-' --preview-window right:80% --preview "git show --color=always {2}")
         _ret=$?
-
-        [[ $_ret != 0 ]] && exit
     }
 
     check_result "${TEMPLATE_FILE}"
@@ -101,7 +100,7 @@ check_result() {
     [[ $# -lt 1 ]] && echo "usage: $0 file_path" && exit 1
     file_path="${1}"
     cat ${file_path} | envsubst | bat -lyaml
-    [[ $? != 0 ]] && exit
+
     printf "Are you sure to create the cluster '$CLUSTER' on ${COL}'$(kubectl config current-context)'${RES}\nHit 'e' for modifying the manifests further.\nHit 'p' for printing the manifests to stdout."
 	echo "[y/N/e/p]?"
 	read _resp
@@ -122,9 +121,8 @@ check_result() {
 
 delete() {
     CLUSTER=$(kubectl get cluster --no-headers -o custom-columns=":metadata.name" -A | fzf --header "Select cluster to delete" --prompt='λ')
-    [[ $? != 0 ]] && exit 0
     NS=$(kubectl get cluster -A | grep $CLUSTER | cut -d' ' -f1)
-    [[ $? != 0 ]] && exit 0
+
     echo "Are you sure to delete cluster '$CLUSTER' in namespace '$NS' on $(kubectl config current-context):"
 	echo "[y/N]?"
 	read _resp
@@ -185,7 +183,8 @@ print_version() {
 cleanup() {
     # make sure the temp git repo was cleaned (in case signal was send during the cloning)
     rm -rf deleteme-temp
+    exit 0
 }
-trap cleanup EXIT
+trap cleanup EXIT 1 2 3 6
 
 main $@
