@@ -82,14 +82,13 @@ deploy() {
         echo "Fetching the versions.."
         {
             rm -rf deleteme-temp
-            git clone https://github.com/giantswarm/cluster-vsphere deleteme-temp && cd deleteme-temp
+            git clone https://github.com/giantswarm/cluster-vsphere deleteme-temp
             for v in $(echo ${_possible_versions}); do
-                git cat-file -t $(echo $v | cut -f2 -d'-') &> /dev/null && _filtered_versions+=($v)
+                git -C deleteme-temp cat-file -t $(echo $v | cut -f2 -d'-') &> /dev/null && _filtered_versions+=($v)
             done
-            cd .. && rm -rf deleteme-temp
         } &> /dev/null
 
-        CLUSTER_VERSION=$(printf "%s\n" "${_filtered_versions[@]}" | fzf --header "cluster version?" --prompt='λ' --cycle --delimiter='-' --preview-window right:80% --preview "git show --color=always {2}")
+        CLUSTER_VERSION=$(printf "%s\n" "${_filtered_versions[@]}" | fzf --header "cluster version?" --prompt='λ' --cycle --delimiter='-' --preview-window right:80% --preview "git -C deleteme-temp show --color=always {2}")
         _ret=$?
     }
 
