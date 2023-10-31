@@ -21,8 +21,7 @@ data:
           ipPoolName: wc-cp-ips
           port: 6443
         loadBalancers:
-          cidrBlocks:
-          - "10.10.222.132/32"
+          ipPoolName: svc-lb-ips
     controlPlane:
       image:
         repository: registry.k8s.io
@@ -36,7 +35,7 @@ data:
         diskGiB: 50
         numCPUs: 4
         memoryMiB: 8096
-        resourcePool: "grasshopper"
+        resourcePool: "*/Resources"
         template: ubuntu-2004-kube-$K8S_VERSION
 
     nodeClasses:
@@ -46,7 +45,7 @@ data:
         diskGiB: 50
         numCPUs: 6
         memoryMiB: 14000
-        resourcePool: "grasshopper"
+        resourcePool: "*/Resources"
         network:
           devices:
           - networkName: 'grasshopper-capv'
