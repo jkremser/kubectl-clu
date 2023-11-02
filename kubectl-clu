@@ -5,7 +5,8 @@ DIR="${DIR:-$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )}"
 K8S_VERSIONS=(v1.25.6 v1.24.11 v1.23.16 v1.22.5+vmware.1)
 TEMPLATE_FILE=${TEMPLATE_FILE:-"cluster-list.yaml"}
 export ORG=${ORG:-"giantswarm"}
-export DEFAULT_APPS_VERSION=${DEFAULT_APPS_VERSION:-"0.11.1"}
+export CLUSTER_VERSION=${CLUSTER_VERSION:-"0.8.0"}
+export DEFAULT_APPS_VERSION=${DEFAULT_APPS_VERSION:-"0.11.2"}
 
 main() {
     [[ $# -lt 1 ]] && print_usage && exit 1
@@ -72,7 +73,6 @@ deploy() {
     export CLUSTER IP ORG DEFAULT_APPS_VERSION
 
     export CLUSTER_CATALOG=cluster
-    export CLUSTER_VERSION=0.6.1
     TEST_CATALOG=$(echo -e "no\nyes" | fzf --header "test catalog?" --prompt='λ')
 
     [[ ${TEST_CATALOG} == "yes" ]] && {
