@@ -36,11 +36,11 @@ data:
         numCPUs: 4
         memoryMiB: 8096
         resourcePool: "*/Resources"
-        template: $TEMPLATE
+        template: $IMG_TEMPLATE
 
     nodeClasses:
       default:
-        template: $TEMPLATE
+        template: $IMG_TEMPLATE
         cloneMode: "linkedClone"
         diskGiB: 50
         numCPUs: 6

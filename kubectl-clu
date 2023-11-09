@@ -50,7 +50,7 @@ deploy() {
     K8S_VERSION=$(printf "%s\n" "${K8S_VERSIONS}" | \
      tr ' ' '\n' | \
      fzf --header "Select k8s version" --prompt='λ' --cycle --preview-window top:80% \
-      --preview "printf '${COL}'; figlet -f big GiantSwarm.io; printf '${RES}'; echo -e 'values.yaml for cluster chart:\n=============================='; export K8S_VERSION={}; export TEMPLATE=$(echo $IMG_TEMPLATE | K8S_VERSION={} envsubst); cat "${TEMPLATE_FILE}" | envsubst | yq 'select(documentIndex == 0) | .data.values' - | yq --colors")
+      --preview "printf '${COL}'; figlet -f big GiantSwarm.io; printf '${RES}'; echo -e 'values.yaml for cluster chart:\n=============================='; export K8S_VERSION={}; export IMG_TEMPLATE=$(echo $IMG_TEMPLATE | K8S_VERSION={} envsubst); cat "${TEMPLATE_FILE}" | envsubst | yq 'select(documentIndex == 0) | .data.values' - | yq --colors")
 
     export K8S_VERSION
 
@@ -110,23 +110,23 @@ deploy() {
 check_result() {
     [[ $# -lt 1 ]] && echo "usage: $0 file_path" && exit 1
     file_path="${1}"
-    cat ${file_path} | envsubst | bat -lyaml
+    cat ${file_path} | envsubst | envsubst | bat -lyaml
 
     printf "Are you sure to create the cluster '$CLUSTER' on ${COL}'$(kubectl config current-context)'${RES}\nHit 'e' for modifying the manifests further.\nHit 'p' for printing the manifests to stdout."
 	echo "[y/N/e/p]?"
 	read -n1 _resp
 	[[ $_resp =~ [yY] ]] && {
         # here we apply the manifests
-        cat ${file_path} | envsubst | kubectl apply -f -
+        cat ${file_path} | envsubst | envsubst | kubectl apply -f -
     }
     [[ $_resp =~ [eE] ]] && {
         tmp="$(mktemp).yaml"
-        cat ${file_path} | envsubst > ${tmp}
+        cat ${file_path} | envsubst | envsubst > ${tmp}
         ${EDITOR} ${tmp}
         check_result ${tmp}
     }
     [[ $_resp =~ [pP] ]] && {
-        cat ${file_path} | envsubst
+        cat ${file_path} | envsubst | envsubst
     }
 }
 
