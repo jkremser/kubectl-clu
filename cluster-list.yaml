@@ -36,11 +36,11 @@ data:
         numCPUs: 4
         memoryMiB: 8096
         resourcePool: "*/Resources"
-        template: ubuntu-2004-kube-$K8S_VERSION
+        template: $TEMPLATE
 
     nodeClasses:
       default:
-        template: ubuntu-2004-kube-$K8S_VERSION
+        template: $TEMPLATE
         cloneMode: "linkedClone"
         diskGiB: 50
         numCPUs: 6

@@ -2,7 +2,8 @@
 set -e
 
 DIR="${DIR:-$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )}"
-K8S_VERSIONS=(v1.25.6 v1.24.11 v1.23.16 v1.22.5+vmware.1)
+FLATCAR_K8S_VERSIONS=(v1.24.12)
+UBUNTU_K8S_VERSIONS=(v1.25.6 v1.24.11 v1.23.16 v1.22.5+vmware.1)
 TEMPLATE_FILE=${TEMPLATE_FILE:-"cluster-list.yaml"}
 export ORG=${ORG:-"giantswarm"}
 export CLUSTER_VERSION=${CLUSTER_VERSION:-"0.8.0"}
@@ -35,10 +36,21 @@ deploy() {
     export COL="\e[2;35;49m"
     export RES="\e[0m"
 
+    # os
+    OS=$(echo -e "ubuntu\nflatcar" | fzf --header "Select OS" --prompt='λ')
+    [[ ${OS} == "ubuntu" ]] && {
+        export IMG_TEMPLATE="ubuntu-2004-kube-\$K8S_VERSION"
+        K8S_VERSIONS="${UBUNTU_K8S_VERSIONS[@]}"
+    } || {
+        export IMG_TEMPLATE="flatcar-stable-3602.2.1-kube-\$K8S_VERSION-gs"
+        K8S_VERSIONS="${FLATCAR_K8S_VERSIONS[@]}"
+    }
+
     # k8s version
-    K8S_VERSION=$(printf "%s\n" "${K8S_VERSIONS[@]}" | \
+    K8S_VERSION=$(printf "%s\n" "${K8S_VERSIONS}" | \
+     tr ' ' '\n' | \
      fzf --header "Select k8s version" --prompt='λ' --cycle --preview-window top:80% \
-      --preview "printf '${COL}'; figlet -f big GiantSwarm.io; printf '${RES}'; echo -e 'values.yaml for cluster chart:\n=============================='; export K8S_VERSION={}; cat "${TEMPLATE_FILE}" | envsubst | yq 'select(documentIndex == 0) | .data.values' - | yq --colors")
+      --preview "printf '${COL}'; figlet -f big GiantSwarm.io; printf '${RES}'; echo -e 'values.yaml for cluster chart:\n=============================='; export K8S_VERSION={}; export TEMPLATE=$(echo $IMG_TEMPLATE | K8S_VERSION={} envsubst); cat "${TEMPLATE_FILE}" | envsubst | yq 'select(documentIndex == 0) | .data.values' - | yq --colors")
 
     export K8S_VERSION
 
