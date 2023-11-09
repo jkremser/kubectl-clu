@@ -120,7 +120,7 @@ check_result() {
         cat ${file_path} | envsubst | kubectl apply -f -
     }
     [[ $_resp =~ [eE] ]] && {
-        tmp=$(mktemp)
+        tmp="$(mktemp).yaml"
         cat ${file_path} | envsubst > ${tmp}
         ${EDITOR} ${tmp}
         check_result ${tmp}
