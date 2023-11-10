@@ -3,7 +3,7 @@ kind: Plugin
 metadata:
   name: luster
 spec:
-  version: "v0.1.1"
+  version: "v0.1.2"
   homepage: https://github.com/jkremser/kubectl-luster
   shortDescription: "Simple TUI based shell script for templating the GiantSwarm clusters."
   description: |
@@ -16,9 +16,9 @@ spec:
             values:
               - darwin
               - linux
-      uri: https://github.com/jkremser/kubectl-luster/archive/refs/tags/v0.1.1.zip
+      uri: https://github.com/jkremser/kubectl-luster/archive/refs/tags/v0.1.2.zip
       # 'sha256' is the sha256sum of the zip from url above (shasum -a 256 ..zip)
-      sha256: 6a82359dfb0a582567c05e69201d25e43355d99addd3caadd78933e12fc1c985
+      sha256: 6c104d89ae18b3dfb4bf13a58fdac1cf50898dd17e5461e6e3848bdb172fd555
       # {{addURIAndSha "https://github.com/jkremser/kubectl-luster/releases/download/{{ .TagName }}/kubectl-luster_{{ .TagName }}.tar.gz" .TagName }}
       files:
         - from: "kubectl-luster-*/kubectl-luster"
