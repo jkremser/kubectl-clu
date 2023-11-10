@@ -1,10 +1,10 @@
 apiVersion: krew.googlecontainertools.github.com/v1alpha2
 kind: Plugin
 metadata:
-  name: clu
+  name: luster
 spec:
   version: "v0.1.1"
-  homepage: https://github.com/jkremser/kubectl-clu
+  homepage: https://github.com/jkremser/kubectl-luster
   shortDescription: "Simple TUI based shell script for templating the GiantSwarm clusters."
   description: |
     It asks couple of questions and fill the answers to the proper places for K8s manifests.
@@ -16,19 +16,19 @@ spec:
             values:
               - darwin
               - linux
-      uri: https://github.com/jkremser/kubectl-clu/archive/refs/tags/v0.1.1.zip
+      uri: https://github.com/jkremser/kubectl-luster/archive/refs/tags/v0.1.1.zip
       # 'sha256' is the sha256sum of the zip from url above (shasum -a 256 ..zip)
       sha256: 6a82359dfb0a582567c05e69201d25e43355d99addd3caadd78933e12fc1c985
-      # {{addURIAndSha "https://github.com/jkremser/kubectl-clu/releases/download/{{ .TagName }}/kubectl-clu_{{ .TagName }}.tar.gz" .TagName }}
+      # {{addURIAndSha "https://github.com/jkremser/kubectl-luster/releases/download/{{ .TagName }}/kubectl-luster_{{ .TagName }}.tar.gz" .TagName }}
       files:
-        - from: "kubectl-clu-*/kubectl-clu"
+        - from: "kubectl-luster-*/kubectl-luster"
           to: "."
-        - from: "kubectl-clu-*/LICENSE"
+        - from: "kubectl-luster-*/LICENSE"
           to: "."
-        - from: "kubectl-clu-*/cluster-list.yaml"
+        - from: "kubectl-luster-*/cluster-list.yaml"
           to: "."
-        - from: "kubectl-clu-*/VERSION"
+        - from: "kubectl-luster-*/VERSION"
           to: "."
-        - from: "kubectl-clu-*/README.md"
+        - from: "kubectl-luster-*/README.md"
           to: "."
-      bin: kubectl-clu
+      bin: kubectl-luster

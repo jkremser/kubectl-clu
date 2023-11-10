@@ -165,7 +165,7 @@ check_template() {
 print_usage() {
     cat << EOF
 
-Usage: kubectl clu (c)reate | (d)elete
+Usage: kubectl luster (c)reate | (d)elete
 
 Available commands:
    create, c              Runs the interactive mode for creating the clulster
@@ -173,8 +173,8 @@ Available commands:
    --version, -v          Prints the version
 
 Examples:
-   kubectl clu create                       ... default usage
-   TEMPLATE_FILE=~/asdf kubectl clu create  ... custom file that will be templated
+   kubectl luster create                       ... default usage
+   TEMPLATE_FILE=~/asdf kubectl luster create  ... custom file that will be templated
 
 Other env vars that can be passed:
    ORG

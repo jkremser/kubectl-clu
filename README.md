@@ -1,4 +1,4 @@
-# kubectl-clu plugin
+# kubectl-luster plugin
 
 Simple TUI based shell script for templating the GiantSwarm clusters.
 
@@ -8,24 +8,24 @@ Simple TUI based shell script for templating the GiantSwarm clusters.
 Having krew [installed](https://krew.sigs.k8s.io/docs/user-guide/setup/install/), just run:
 
 ```bash
-kubectl krew install --manifest-url=https://github.com/jkremser/kubectl-clu/raw/main/.krew.yaml
+kubectl krew install --manifest-url=https://github.com/jkremser/kubectl-luster/raw/main/.krew.yaml
 ```
 
 ```bash
 # output:
-Installing plugin: clu
-Installed plugin: clu
+Installing plugin: luster
+Installed plugin: luster
 \
  | Use this plugin:
- | 	kubectl clu
+ | 	kubectl luster
  | Documentation:
- | 	https://github.com/jkremser/kubectl-clu
+ | 	https://github.com/jkremser/kubectl-luster
 /
 ```
 ### Usage
 
 ```bash
-k clu create
+k luster create
 ```
 
 ### Requirements
@@ -54,7 +54,7 @@ and for `yq` consult the [readme](https://github.com/mikefarah/yq#install).
 ### Update
 
 ```
-kubectl clu -v
-kubectl krew uninstall clu && kubectl krew install --manifest-url=https://github.com/jkremser/kubectl-clu/raw/main/.krew.yaml
-kubectl clu -v
+kubectl luster -v
+kubectl krew uninstall luster && kubectl krew install --manifest-url=https://github.com/jkremser/kubectl-luster/raw/main/.krew.yaml
+kubectl luster -v
 ```
