@@ -78,7 +78,7 @@ spec:
   extraConfigs:
   - kind: secret
     name: container-registries-configuration
-    namespace: giantswarm
+    namespace: default
     priority: 25
   kubeConfig:
     inCluster: true
