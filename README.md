@@ -3,6 +3,9 @@
 Simple TUI based shell script for templating the GiantSwarm clusters.
 
 
+[![Watch the full asciicast](./demo.gif)](https://asciinema.org/a/625434)
+([pauseable demo](https://asciinema.org/a/625434))
+
 ## Quick start
 
 Having krew [installed](https://krew.sigs.k8s.io/docs/user-guide/setup/install/), just run:
